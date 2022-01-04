@@ -145,7 +145,6 @@ export = class Golf extends CommandBase {
 					self.placement.ballPlacement = [rB, ballX];
 					self.checkWin(self.placement, interaction, message);
 				} else {
-					console.log("DEBUG");
 					interaction.acknowledge();
 					return;
 				}
