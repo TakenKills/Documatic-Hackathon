@@ -72,8 +72,6 @@ module.exports = class Hangman extends CommandBase_1.CommandBase {
             .setTitle(interaction.message.embeds[0].title)
             .setDescription(hang(self.stage, self.word, self.correct))
             .setTimestamp();
-        console.log(self.word);
-        console.log(self.correct);
         if (self.word.split("").every((letter) => self.correct.includes(letter))) {
             const gained_points = 20 - self.stage * 5;
             embed = self.client.embeds

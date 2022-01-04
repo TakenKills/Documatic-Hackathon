@@ -21,13 +21,13 @@ module.exports = class interactionCreate extends EventBase_1.EventBase {
                 current.timeout = value.timeout;
                 if (current.setTimeout)
                     clearTimeout(current.setTimeout);
+                setTimeout(() => {
+                    delete this.client.function_loop[interaction.data.custom_id];
+                    this.client.util.disableComponents(interaction);
+                }, current.timeout);
                 break;
             }
         }
-        setTimeout(() => {
-            delete this.client.function_loop[interaction.data.custom_id];
-            this.client.util.disableComponents(interaction);
-        }, current.timeout);
         await current.function(interaction, ...current.paramaters);
     }
 };

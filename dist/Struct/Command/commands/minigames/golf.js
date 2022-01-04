@@ -98,6 +98,9 @@ module.exports = class Golf extends CommandBase_1.CommandBase {
         return message.channel.createMessage({ embed, components: rows });
     }
     async cb(interaction, self, message) {
+        var _a;
+        if (((_a = interaction.user) === null || _a === void 0 ? void 0 : _a.id) !== message.author.id)
+            return;
         const { custom_id: id } = interaction.data;
         const [rP, xP] = self.placement.playerPlacement;
         const [rB, xB] = self.placement.ballPlacement;
@@ -112,7 +115,6 @@ module.exports = class Golf extends CommandBase_1.CommandBase {
                     self.checkWin(self.placement, interaction, message);
                 }
                 else {
-                    console.log("DEBUG");
                     interaction.acknowledge();
                     return;
                 }
@@ -126,7 +128,6 @@ module.exports = class Golf extends CommandBase_1.CommandBase {
                     self.checkWin(self.placement, interaction, message);
                 }
                 else {
-                    console.log("DEBUG");
                     interaction.acknowledge();
                     return;
                 }
@@ -139,7 +140,6 @@ module.exports = class Golf extends CommandBase_1.CommandBase {
                     self.checkWin(self.placement, interaction, message);
                 }
                 else {
-                    console.log("DEBUG");
                     interaction.acknowledge();
                     return;
                 }
@@ -153,7 +153,6 @@ module.exports = class Golf extends CommandBase_1.CommandBase {
                     self.checkWin(self.placement, interaction, message);
                 }
                 else {
-                    console.log("DEBUG");
                     interaction.acknowledge();
                     return;
                 }
@@ -230,7 +229,7 @@ module.exports = class Golf extends CommandBase_1.CommandBase {
             .setID("next")
             .setCallback(this.nextLevel, 15000, this, message));
         interaction.message.edit({
-            content: `Nice! You won!\nCurrent level: ${this.level} points gained: ${this.level * 15}`,
+            content: `Nice! You won!\nCurrent level: ${this.level}\npoints gained: ${this.level * 15}`,
             embeds: [],
             components: [row]
         });

@@ -10,6 +10,7 @@ const database_1 = require("./Database/database");
 const Classes_1 = require("./Struct/Classes");
 const CommandHandler_1 = require("./Struct/Command/CommandHandler");
 const EventHandler_1 = require("./Struct/Event/EventHandler");
+const constants_1 = require("./constants");
 require("dotenv").config();
 class Client extends eris_1.Client {
     constructor() {
@@ -70,10 +71,6 @@ class Client extends eris_1.Client {
     }
 }
 exports.Client = Client;
-Object.defineProperty(eris_1.User.prototype, "tag", {
-    get: function () {
-        return `${this.username}#${this.discriminator}`;
-    }
-});
+constants_1.DEFINE_PROPERTIES();
 exports.client = new Client();
 exports.client._connect();
