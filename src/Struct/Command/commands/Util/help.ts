@@ -14,7 +14,7 @@ export = class Help extends CommandBase {
 
 	public async execute(message: import("eris").Message, _args: string[]): Promise<void> {
 		const row = new ActionRowConstructor();
-		console.log(this.client.function_loop);
+
 		const button = new ButtonConstructor(this.client)
 			.setLabel("Help")
 			.setID("help_button")
@@ -50,7 +50,6 @@ export = class Help extends CommandBase {
 
 		const options = [];
 		for (const category of self.client.CommandHandler.categories) {
-			console.log(category);
 			options.push({
 				label: category,
 				value: category.toLowerCase(),
@@ -74,7 +73,6 @@ export = class Help extends CommandBase {
 	public helpMenuCB(interaction: ComponentInteraction, self: this): void {
 		const data = interaction.data as ComponentInteractionSelectMenuData;
 		const category = data.values[0];
-		console.log(data);
 		const commands = filter<string, CommandBase>(
 			self.client.CommandHandler.commands,
 			(command) => command.category?.toLowerCase() === category

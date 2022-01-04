@@ -87,7 +87,6 @@ export class CommandHandler extends EventEmitter {
 
 			if (now < expirationTime) {
 				const timeLeft = (expirationTime - now) / 1000;
-				console.log("heoooo");
 				return this.emit("cooldown", message, command, timeLeft);
 			}
 		}
