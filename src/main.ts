@@ -1,10 +1,11 @@
-import { Client as ErisClient, ComponentInteraction, Message, User } from "eris";
+import { Client as ErisClient, ComponentInteraction, Message } from "eris";
 import mongoose, { Document } from "mongoose";
 import { Cache } from "./Database/cache";
 import { Database } from "./Database/database";
 import { Util, Embed } from "./Struct/Classes";
 import { CommandHandler } from "./Struct/Command/CommandHandler";
 import { EventHandler } from "./Struct/Event/EventHandler";
+import { DEFINE_PROPERTIES } from "./constants";
 require("dotenv").config();
 
 export type Config = { default_prefix: string; owners: string[] };
@@ -110,11 +111,7 @@ export class Client extends ErisClient {
 	}
 }
 
-Object.defineProperty(User.prototype, "tag", {
-	get: function () {
-		return `${this.username}#${this.discriminator}`;
-	}
-});
+DEFINE_PROPERTIES();
 
 export const client = new Client();
 
