@@ -80,7 +80,8 @@ module.exports = class Golf extends CommandBase_1.CommandBase {
         super("golf", {
             category: "games",
             description: "Play a game of golf, that consists of infinite levels!",
-            usage: "golf"
+            usage: "golf",
+            cooldown: 69
         });
     }
     execute(message, _, level) {

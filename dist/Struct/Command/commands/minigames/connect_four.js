@@ -112,7 +112,8 @@ module.exports = class ConnectFour extends CommandBase_1.CommandBase {
             aliases: ["cf"],
             category: "multiplayer games",
             description: "Play Connect Four.",
-            usage: "connectfour [@user | user_id]"
+            usage: "connectfour [@user | user_id]",
+            cooldown: 69
         });
     }
     execute(message, args) {

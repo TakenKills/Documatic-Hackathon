@@ -22,7 +22,7 @@ module.exports = class RPS extends CommandBase_1.CommandBase {
             usage: "rps",
             aliases: ["rps"],
             clientPermissions: ["embedLinks"],
-            cooldown: 10
+            cooldown: 20
         });
     }
     async execute(message, args) {
@@ -71,9 +71,14 @@ module.exports = class RPS extends CommandBase_1.CommandBase {
             else {
                 const winner_user = game.players[winner];
                 const loser_user = game.players[1 - winner];
-                const content = `${winner_user ? (game.bot ? "You" : winner_user.mention) : "I"} won, unfortunate for ${loser_user ? `you ${loser_user.mention}` : "me."}.`;
+                let description = `${winner_user ? (game.bot ? "You" : winner_user.mention) : "I"} won, unfortunate for ${loser_user ? `you ${loser_user.mention}` : "me."}.`;
+                if (winner_user) {
+                    const gain = 10;
+                    description += `\n${winner_user.mention} gained ${gain}.`;
+                    await self.client.addPoints(winner_user.id, gain);
+                }
                 interaction.message.edit({
-                    content,
+                    content: description,
                     components: []
                 });
             }
