@@ -137,7 +137,8 @@ export = class ConnectFour extends CommandBase {
 			aliases: ["cf"],
 			category: "multiplayer games",
 			description: "Play Connect Four.",
-			usage: "connectfour [@user | user_id]"
+			usage: "connectfour [@user | user_id]",
+			cooldown: 69
 		});
 	}
 
