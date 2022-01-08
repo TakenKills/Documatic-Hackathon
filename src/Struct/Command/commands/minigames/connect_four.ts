@@ -46,9 +46,9 @@ class Board {
 				});
 			});
 
-			return Array.from(Array(table_map[0].length))
-				.map((_, idx) => table_map.map((block) => block[idx]).join(" | "))
-				.join("\n");
+			return Array.from(Array(table_map[0].length), (_, idx) => table_map.map((block) => block[idx]).join(" | ")).join(
+				"\n"
+			);
 		};
 	}
 
