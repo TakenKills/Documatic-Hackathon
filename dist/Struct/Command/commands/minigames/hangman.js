@@ -54,7 +54,7 @@ module.exports = class Hangman extends CommandBase_1.CommandBase {
             .map((_, i) => new Classes_1.ButtonConstructor(this.client)
             .setLabel(letters[i].toUpperCase())
             .setID(letters[i])
-            .setCallback(this.cb, 60000, this, game, message.author.id));
+            .setCallback(this.cb, 120000, this, game, message.author.id));
         for (let i = 0; i < 3; i++)
             rows[i].setComponents(btns.splice(0, 5));
         const embed = this.client.embeds
@@ -65,8 +65,6 @@ module.exports = class Hangman extends CommandBase_1.CommandBase {
         this.client.createMessage(message.channel.id, { components: rows, embed });
     }
     async cb(interaction, self, game, authorID) {
-        if (!interaction.message.components)
-            return;
         const letters = game.word.toLowerCase().split("");
         const letter = interaction.data.custom_id.toLowerCase();
         if (letters.includes(letter) && !game.correct.includes(letter)) {
@@ -75,6 +73,17 @@ module.exports = class Hangman extends CommandBase_1.CommandBase {
         }
         else
             game.inc_stage();
+        if (game.stage >= 4) {
+            interaction.deferUpdate();
+            return interaction.message.edit({
+                components: [],
+                embed: self.client.embeds
+                    .error()
+                    .setTitle("Game Over!")
+                    .setDescription(`The word was ${game.word}`)
+                    .setTimestamp()
+            });
+        }
         for (const row of interaction.message.components) {
             for (const button of row.components)
                 if (button.custom_id === letter)
@@ -85,17 +94,6 @@ module.exports = class Hangman extends CommandBase_1.CommandBase {
             .setTitle(interaction.message.embeds[0].title)
             .setDescription(hang(game.stage, game.word, game.correct))
             .setTimestamp();
-        if (game.stage === 4) {
-            interaction.acknowledge();
-            return interaction.message.edit({
-                components: [],
-                embed: self.client.embeds
-                    .error()
-                    .setTitle("Game Over!")
-                    .setDescription(`The word was ${game.word}`)
-                    .setTimestamp()
-            });
-        }
         if (game.word.split("").every((letter) => game.correct.includes(letter))) {
             const gained_points = 20 - game.stage * 5;
             embed = self.client.embeds
@@ -108,7 +106,7 @@ module.exports = class Hangman extends CommandBase_1.CommandBase {
             return interaction.message.edit({ components: [], embed });
         }
         interaction.acknowledge();
-        interaction.message.edit({ components: interaction.message.components, embed });
+        return interaction.message.edit({ components: interaction.message.components, embed });
     }
     getLetters(word) {
         const letters = "abcdefghijklmnopqrstuvwxyz".split("");
