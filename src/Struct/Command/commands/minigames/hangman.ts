@@ -1,4 +1,4 @@
-import { ComponentInteraction, Message } from "eris";
+import { ComponentInteraction, InteractionButton, Message } from "eris";
 import { CommandBase } from "../../CommandBase";
 import { ActionRowConstructor, ButtonConstructor } from "../../../Classes";
 import { words } from "../../../../constants";
@@ -21,11 +21,32 @@ const hang = (stage: number, word: string, guessed_letters: string[]) => {
 `;
 };
 
-export = class Hangman extends CommandBase {
+class Game {
 	public word: string;
 	public correct: string[];
 	public stage: number;
 
+	constructor() {
+		this.word = words[Math.floor(Math.random() * words.length)];
+		this.correct = [];
+		this.stage = 0;
+	}
+
+	public add_correct(letters: string | string[]) {
+		const to_add = Array.isArray(letters) ? letters : [letters];
+		this.correct.push(...to_add);
+
+		return this;
+	}
+
+	public inc_stage() {
+		this.stage++;
+
+		return this;
+	}
+}
+
+export = class Hangman extends CommandBase {
 	constructor() {
 		super("hangman", {
 			description: "Play hangman!",
@@ -35,14 +56,12 @@ export = class Hangman extends CommandBase {
 			clientPermissions: ["embedLinks"],
 			cooldown: 69
 		});
-
-		this.word = words[Math.floor(Math.random() * words.length)];
-		this.correct = [];
-		this.stage = 0;
 	}
 
-	public execute(message: Message, _args: string[]) {
-		const letters = this.getLetters(this.word);
+	public execute(message: Message) {
+		const game = new Game();
+
+		const letters = this.getLetters(game.word);
 		const rows = new Array(3).fill(0).map(() => new ActionRowConstructor());
 		const btns = new Array(15)
 			.fill(0)
@@ -50,7 +69,7 @@ export = class Hangman extends CommandBase {
 				new ButtonConstructor(this.client)
 					.setLabel(letters[i].toUpperCase())
 					.setID(letters[i])
-					.setCallback(this.cb, 60000, this, message.author.id)
+					.setCallback(this.cb, 60000, this, game, message.author.id)
 			);
 
 		for (let i = 0; i < 3; i++) rows[i].setComponents(btns.splice(0, 5));
@@ -58,59 +77,54 @@ export = class Hangman extends CommandBase {
 		const embed = this.client.embeds
 			.regular()
 			.setTitle("Hangman! 🎮")
-			.setDescription(hang(this.stage, this.word, this.correct))
+			.setDescription(hang(game.stage, game.word, game.correct))
 			.setTimestamp();
 
 		message.channel.createMessage({ components: rows, embed });
 	}
 
-	private async cb(interaction: ComponentInteraction, self: this, authorID: string) {
+	private async cb(interaction: ComponentInteraction, self: this, game: Game, authorID: string) {
 		if (!interaction.message.components) return;
 
-		const letters = self.word.toLowerCase().split("");
+		const letters = game.word.toLowerCase().split("");
 		const letter = interaction.data.custom_id!.toLowerCase();
 
-		if (letters.includes(letter) && !self.correct.includes(letter)) {
-			const repeated = self.client.util.getRepeatedChar(self.word, letter);
-			self.correct.push(...repeated);
-		} else self.stage++;
+		if (letters.includes(letter) && !game.correct.includes(letter)) {
+			const repeated = self.client.util.getRepeatedChar(game.word, letter);
+			game.add_correct(repeated);
+		} else game.inc_stage();
 
 		for (const row of interaction.message.components) {
-			//@ts-expect-error
-			for (const button of row.components) if (button.custom_id === letter) button.disabled = true;
+			for (const button of row.components)
+				if ((button as InteractionButton).custom_id === letter) button.disabled = true;
 		}
 		let embed = self.client.embeds
 			.regular()
 			.setTitle(interaction.message.embeds[0].title!)
-			.setDescription(hang(self.stage, self.word, self.correct))
+			.setDescription(hang(game.stage, game.word, game.correct))
 			.setTimestamp();
 
-		if (self.stage === 4) {
-			self.stage = 0;
-			self.correct = [];
-
+		if (game.stage === 4) {
 			interaction.acknowledge();
 
-			return interaction.message
-				.edit({
-					components: [],
-					embed: self.client.embeds
-						.error()
-						.setTitle("Game Over!")
-						.setDescription(`The word was ${self.word}`)
-						.setTimestamp()
-				})
-				.then(() => (self.word = words[Math.floor(Math.random() * words.length)]));
+			return interaction.message.edit({
+				components: [],
+				embed: self.client.embeds
+					.error()
+					.setTitle("Game Over!")
+					.setDescription(`The word was ${game.word}`)
+					.setTimestamp()
+			});
 		}
 
-		if (self.word.split("").every((letter) => self.correct.includes(letter))) {
-			const gained_points = 20 - self.stage * 5;
+		if (game.word.split("").every((letter) => game.correct.includes(letter))) {
+			const gained_points = 20 - game.stage * 5;
 
 			embed = self.client.embeds
 				.success()
 				.setTitle(interaction.message.embeds[0].title!)
 				.setDescription("You won!")
-				.setFooter(`The word was ${self.word}, You gained ${gained_points} points!`)
+				.setFooter(`The word was ${game.word}, You gained ${gained_points} points!`)
 				.setTimestamp();
 
 			await self.client.addPoints(authorID, gained_points);

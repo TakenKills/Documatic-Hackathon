@@ -18,6 +18,22 @@ const hang = (stage, word, guessed_letters) => {
 --------------
 `;
 };
+class Game {
+    constructor() {
+        this.word = constants_1.words[Math.floor(Math.random() * constants_1.words.length)];
+        this.correct = [];
+        this.stage = 0;
+    }
+    add_correct(letters) {
+        const to_add = Array.isArray(letters) ? letters : [letters];
+        this.correct.push(...to_add);
+        return this;
+    }
+    inc_stage() {
+        this.stage++;
+        return this;
+    }
+}
 module.exports = class Hangman extends CommandBase_1.CommandBase {
     constructor() {
         super("hangman", {
@@ -28,41 +44,38 @@ module.exports = class Hangman extends CommandBase_1.CommandBase {
             clientPermissions: ["embedLinks"],
             cooldown: 69
         });
-        this.word = constants_1.words[Math.floor(Math.random() * constants_1.words.length)];
-        this.correct = [];
-        this.stage = 0;
     }
-    execute(message, _args) {
-        const letters = this.getLetters(this.word);
+    execute(message) {
+        const game = new Game();
+        const letters = this.getLetters(game.word);
         const rows = new Array(3).fill(0).map(() => new Classes_1.ActionRowConstructor());
         const btns = new Array(15)
             .fill(0)
             .map((_, i) => new Classes_1.ButtonConstructor(this.client)
             .setLabel(letters[i].toUpperCase())
             .setID(letters[i])
-            .setCallback(this.cb, 60000, this, message.author.id));
+            .setCallback(this.cb, 60000, this, game, message.author.id));
         for (let i = 0; i < 3; i++)
             rows[i].setComponents(btns.splice(0, 5));
         const embed = this.client.embeds
             .regular()
             .setTitle("Hangman! 🎮")
-            .setDescription(hang(this.stage, this.word, this.correct))
+            .setDescription(hang(game.stage, game.word, game.correct))
             .setTimestamp();
         message.channel.createMessage({ components: rows, embed });
     }
-    async cb(interaction, self, authorID) {
+    async cb(interaction, self, game, authorID) {
         if (!interaction.message.components)
             return;
-        const letters = self.word.toLowerCase().split("");
+        const letters = game.word.toLowerCase().split("");
         const letter = interaction.data.custom_id.toLowerCase();
-        if (letters.includes(letter) && !self.correct.includes(letter)) {
-            const repeated = self.client.util.getRepeatedChar(self.word, letter);
-            self.correct.push(...repeated);
+        if (letters.includes(letter) && !game.correct.includes(letter)) {
+            const repeated = self.client.util.getRepeatedChar(game.word, letter);
+            game.add_correct(repeated);
         }
         else
-            self.stage++;
+            game.inc_stage();
         for (const row of interaction.message.components) {
-            //@ts-expect-error
             for (const button of row.components)
                 if (button.custom_id === letter)
                     button.disabled = true;
@@ -70,30 +83,26 @@ module.exports = class Hangman extends CommandBase_1.CommandBase {
         let embed = self.client.embeds
             .regular()
             .setTitle(interaction.message.embeds[0].title)
-            .setDescription(hang(self.stage, self.word, self.correct))
+            .setDescription(hang(game.stage, game.word, game.correct))
             .setTimestamp();
-        if (self.stage === 4) {
-            self.stage = 0;
-            self.correct = [];
+        if (game.stage === 4) {
             interaction.acknowledge();
-            return interaction.message
-                .edit({
+            return interaction.message.edit({
                 components: [],
                 embed: self.client.embeds
                     .error()
                     .setTitle("Game Over!")
-                    .setDescription(`The word was ${self.word}`)
+                    .setDescription(`The word was ${game.word}`)
                     .setTimestamp()
-            })
-                .then(() => (self.word = constants_1.words[Math.floor(Math.random() * constants_1.words.length)]));
+            });
         }
-        if (self.word.split("").every((letter) => self.correct.includes(letter))) {
-            const gained_points = 20 - self.stage * 5;
+        if (game.word.split("").every((letter) => game.correct.includes(letter))) {
+            const gained_points = 20 - game.stage * 5;
             embed = self.client.embeds
                 .success()
                 .setTitle(interaction.message.embeds[0].title)
                 .setDescription("You won!")
-                .setFooter(`The word was ${self.word}, You gained ${gained_points} points!`)
+                .setFooter(`The word was ${game.word}, You gained ${gained_points} points!`)
                 .setTimestamp();
             await self.client.addPoints(authorID, gained_points);
             return interaction.message.edit({ components: [], embed });
