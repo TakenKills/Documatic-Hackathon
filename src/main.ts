@@ -6,6 +6,7 @@ import { Util, Embed } from "./Struct/Classes";
 import { CommandHandler } from "./Struct/Command/CommandHandler";
 import { EventHandler } from "./Struct/Event/EventHandler";
 import { DEFINE_PROPERTIES } from "./constants";
+
 require("dotenv").config();
 
 export type Config = { default_prefix: string; owners: string[] };
@@ -22,8 +23,6 @@ export class Client extends ErisClient {
 			setTimeout?: NodeJS.Timeout;
 		}
 	>;
-
-	public readonly games: { golf: boolean };
 
 	public readonly db: Database;
 	public readonly points: Cache;
@@ -64,10 +63,6 @@ export class Client extends ErisClient {
 			success: () => new Embed().setColor(this.colors.success),
 			error: () => new Embed().setColor(this.colors.error),
 			warning: () => new Embed().setColor(this.colors.warning)
-		};
-
-		this.games = {
-			golf: false
 		};
 
 		this.on("messageCreate", (message: Message) => this.CommandHandler.handle_message(message));

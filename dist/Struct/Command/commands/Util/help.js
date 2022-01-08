@@ -27,7 +27,6 @@ module.exports = class Help extends CommandBase_1.CommandBase {
     }
     async execute(message, _args) {
         const row = new Classes_1.ActionRowConstructor();
-        console.log(this.client.function_loop);
         const button = new Classes_1.ButtonConstructor(this.client)
             .setLabel("Help")
             .setID("help_button")
@@ -53,7 +52,6 @@ module.exports = class Help extends CommandBase_1.CommandBase {
         interaction.message.components = [];
         const options = [];
         for (const category of self.client.CommandHandler.categories) {
-            console.log(category);
             options.push({
                 label: category,
                 value: category.toLowerCase(),
@@ -72,7 +70,6 @@ module.exports = class Help extends CommandBase_1.CommandBase {
     helpMenuCB(interaction, self) {
         const data = interaction.data;
         const category = data.values[0];
-        console.log(data);
         const commands = filter(self.client.CommandHandler.commands, (command) => { var _a; return ((_a = command.category) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === category; });
         const embed = self.client.embeds
             .regular()

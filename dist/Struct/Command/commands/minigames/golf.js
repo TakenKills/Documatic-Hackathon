@@ -28,47 +28,64 @@ const getLevelPlacements = (level) => {
     const playerPlacement = [ballPlacement[0], ballPlacement[1] - 1];
     return { playerPlacement, holePlacement, ballPlacement };
 };
-const generate_field = (Placements) => {
-    const base = new Array(ROW_NUMBER).fill(0).map(() => new Array(ROW_LENGTH).fill(" ⚫ "));
-    let playerPlacement = Placements === null || Placements === void 0 ? void 0 : Placements.playerPlacement;
-    let holePlacement = Placements === null || Placements === void 0 ? void 0 : Placements.holePlacement;
-    let ballPlacement = Placements === null || Placements === void 0 ? void 0 : Placements.ballPlacement;
-    if (!playerPlacement)
-        playerPlacement = [base.length - 2, 5];
-    if (!holePlacement)
-        holePlacement = [1, 5];
-    if (!ballPlacement)
-        ballPlacement = [playerPlacement[0] - 1, playerPlacement[1]];
-    if (playerPlacement[0] === holePlacement[0] && playerPlacement[1] === holePlacement[1])
-        playerPlacement[0]++;
-    base[playerPlacement[0]][playerPlacement[1]] = "  👨‍🦲  ";
-    base[holePlacement[0]][holePlacement[1]] = " 🌀 ";
-    base[ballPlacement[0]][ballPlacement[1]] = " 🥎 ";
-    const field = `${base.map((row) => row.join("")).join("\n")}`;
-    return { base, placement: { playerPlacement, holePlacement, ballPlacement }, field };
-};
+class Course {
+    constructor(level) {
+        this.level = level ? level : 0;
+        this.field = this.generate_field(this.level > 0 ? getLevelPlacements(this.level) : undefined);
+        this.frame = this.field.frame;
+        this.placements = this.field.placement;
+    }
+    generate_field(Placements) {
+        const base = new Array(ROW_NUMBER).fill(0).map(() => new Array(ROW_LENGTH).fill(" ⚫ "));
+        let playerPlacement = Placements === null || Placements === void 0 ? void 0 : Placements.playerPlacement;
+        let holePlacement = Placements === null || Placements === void 0 ? void 0 : Placements.holePlacement;
+        let ballPlacement = Placements === null || Placements === void 0 ? void 0 : Placements.ballPlacement;
+        if (!playerPlacement)
+            playerPlacement = [base.length - 2, 5];
+        if (!holePlacement)
+            holePlacement = [1, 5];
+        if (!ballPlacement)
+            ballPlacement = [playerPlacement[0] - 1, playerPlacement[1]];
+        if (playerPlacement[0] === holePlacement[0] && playerPlacement[1] === holePlacement[1])
+            playerPlacement[0]++;
+        base[playerPlacement[0]][playerPlacement[1]] = "  👨‍🦲  ";
+        base[holePlacement[0]][holePlacement[1]] = " 🌀 ";
+        base[ballPlacement[0]][ballPlacement[1]] = " 🥎 ";
+        const frame = `${base.map((row) => row.join("")).join("\n")}`;
+        return { base, placement: { playerPlacement, holePlacement, ballPlacement }, frame };
+    }
+    edit_ball(placement) {
+        this.field.placement.ballPlacement = placement;
+        this.placements = this.field.placement;
+        return this;
+    }
+    edit_player(placement) {
+        this.field.placement.playerPlacement = placement;
+        this.placements = this.field.placement;
+        return this;
+    }
+    next_level() {
+        this.level++;
+        return this.update(this.level);
+    }
+    update(level) {
+        this.field = this.generate_field(level ? getLevelPlacements(level) : this.placements);
+        this.frame = this.field.frame;
+        this.placements = this.field.placement;
+        return this;
+    }
+}
 module.exports = class Golf extends CommandBase_1.CommandBase {
     constructor() {
         super("golf", {
             category: "games",
-            description: "Play a game of golf. that consists of 5 levels.",
+            description: "Play a game of golf, that consists of infinite levels!",
             usage: "golf"
         });
-        this.level = 1;
-        this.frame = generate_field();
-        this.field = this.frame.field;
-        this.placement = this.frame.placement;
     }
-    async execute(message, _, level) {
-        this.level = level ? level : 0;
-        this.frame = generate_field(level !== 0 ? getLevelPlacements(level) : undefined);
-        this.field = this.frame.field;
-        this.placement = this.frame.placement;
-        const embed = this.client.embeds
-            .regular()
-            .setTitle("Golf!")
-            .setDescription(this.field)
-            .setFooter(this.placement.playerPlacement.join(", "));
+    execute(message, _, level) {
+        const course = new Course(level);
+        const embed = this.client.embeds.regular().setTitle("Golf!").setDescription(course.frame).setTimestamp();
         const btns = new Array(20).fill(0).map((_, i) => {
             var _a;
             return new Classes_1.ButtonConstructor(this.client)
@@ -77,15 +94,15 @@ module.exports = class Golf extends CommandBase_1.CommandBase {
                 .setDisabled(true);
         });
         const ball_movement_btns = new Array(4).fill(0).map(() => new Classes_1.ButtonConstructor(this.client));
-        ball_movement_btns[0].setLabel("⬅️").setID("left").setCallback(this.cb, 60000, this, message);
-        ball_movement_btns[1].setLabel("➡️").setID("right").setCallback(this.cb, 60000, this, message);
-        ball_movement_btns[2].setLabel("⬆️").setID("up").setCallback(this.cb, 60000, this, message);
-        ball_movement_btns[3].setLabel("⬇️").setID("down").setCallback(this.cb, 60000, this, message);
+        ball_movement_btns[0].setLabel("⬅️").setID("left").setCallback(this.cb, 60000, this, message, course);
+        ball_movement_btns[1].setLabel("➡️").setID("right").setCallback(this.cb, 60000, this, message, course);
+        ball_movement_btns[2].setLabel("⬆️").setID("up").setCallback(this.cb, 60000, this, message, course);
+        ball_movement_btns[3].setLabel("⬇️").setID("down").setCallback(this.cb, 60000, this, message, course);
         const player_movement_btns = new Array(4).fill(0).map(() => new Classes_1.ButtonConstructor(this.client));
-        player_movement_btns[0].setLabel("👈").setID("leftP").setCallback(this.cb, 60000, this, message);
-        player_movement_btns[1].setLabel("👉").setID("rightP").setCallback(this.cb, 60000, this, message);
-        player_movement_btns[2].setLabel("👆").setID("upP").setCallback(this.cb, 60000, this, message);
-        player_movement_btns[3].setLabel("👇").setID("downP").setCallback(this.cb, 60000, this, message);
+        player_movement_btns[0].setLabel("👈").setID("leftP").setCallback(this.cb, 60000, this, message, course);
+        player_movement_btns[1].setLabel("👉").setID("rightP").setCallback(this.cb, 60000, this, message, course);
+        player_movement_btns[2].setLabel("👆").setID("upP").setCallback(this.cb, 60000, this, message, course);
+        player_movement_btns[3].setLabel("👇").setID("downP").setCallback(this.cb, 60000, this, message, course);
         const rows = new Array(4).fill(0).map(() => new Classes_1.ActionRowConstructor().setComponents(btns.splice(0, 5)));
         rows[0].setComponent(ball_movement_btns[2], 2);
         rows[1].setComponent(ball_movement_btns[0], 1);
@@ -95,15 +112,15 @@ module.exports = class Golf extends CommandBase_1.CommandBase {
         rows[3].setComponent(player_movement_btns[0], 1);
         rows[3].setComponent(player_movement_btns[1], 3);
         rows[3].setComponent(player_movement_btns[3], 2);
-        return message.channel.createMessage({ embed, components: rows });
+        message.channel.createMessage({ embed, components: rows });
     }
-    async cb(interaction, self, message) {
+    async cb(interaction, self, message, course) {
         var _a;
-        if (((_a = interaction.user) === null || _a === void 0 ? void 0 : _a.id) !== message.author.id)
+        if (((_a = interaction.member) === null || _a === void 0 ? void 0 : _a.id) !== message.author.id)
             return;
         const { custom_id: id } = interaction.data;
-        const [rP, xP] = self.placement.playerPlacement;
-        const [rB, xB] = self.placement.ballPlacement;
+        const [rP, xP] = course.placements.playerPlacement;
+        const [rB, xB] = course.placements.ballPlacement;
         // ball movement
         switch (id) {
             case "left":
@@ -111,12 +128,11 @@ module.exports = class Golf extends CommandBase_1.CommandBase {
                     let ballX = xB - 3;
                     if (ballX < 0)
                         ballX = 0;
-                    self.placement.ballPlacement = [rB, ballX];
-                    self.checkWin(self.placement, interaction, message);
+                    course.edit_ball([rB, ballX]);
+                    self.checkWin(interaction, message, course);
                 }
                 else {
-                    interaction.acknowledge();
-                    return;
+                    return interaction.acknowledge();
                 }
                 break;
             case "right":
@@ -124,24 +140,22 @@ module.exports = class Golf extends CommandBase_1.CommandBase {
                     let ballX = xB + 3;
                     if (ballX > ROW_LENGTH - 1)
                         ballX = ROW_LENGTH - 1;
-                    self.placement.ballPlacement = [rB, ballX];
-                    self.checkWin(self.placement, interaction, message);
+                    course.edit_ball([rB, ballX]);
+                    self.checkWin(interaction, message, course);
                 }
                 else {
-                    interaction.acknowledge();
-                    return;
+                    return interaction.acknowledge();
                 }
             case "up":
                 if (rP - rB === 1 && xB === xP && rP > 0) {
                     let ballR = rP - 3;
                     if (ballR < 0)
                         ballR = 0;
-                    self.placement.ballPlacement = [ballR, xB];
-                    self.checkWin(self.placement, interaction, message);
+                    course.edit_ball([ballR, xB]);
+                    self.checkWin(interaction, message, course);
                 }
                 else {
-                    interaction.acknowledge();
-                    return;
+                    return interaction.acknowledge();
                 }
                 break;
             case "down":
@@ -149,12 +163,11 @@ module.exports = class Golf extends CommandBase_1.CommandBase {
                     let ballR = rP + 3;
                     if (ballR > ROW_NUMBER - 1)
                         ballR = ROW_NUMBER - 1;
-                    self.placement.ballPlacement = [ballR, xB];
-                    self.checkWin(self.placement, interaction, message);
+                    course.edit_ball([ballR, xB]);
+                    self.checkWin(interaction, message, course);
                 }
                 else {
-                    interaction.acknowledge();
-                    return;
+                    return interaction.acknowledge();
                 }
                 break;
         }
@@ -162,41 +175,36 @@ module.exports = class Golf extends CommandBase_1.CommandBase {
         switch (id) {
             case "leftP":
                 if ((rP === rB && xP === xB - 1) || xP - 1 < 0) {
-                    interaction.acknowledge();
-                    return;
+                    return interaction.acknowledge();
                 }
-                self.placement.playerPlacement = [rP, xP - 1];
+                course.edit_player([rP, xP - 1]);
                 break;
             case "rightP":
                 if ((rP === rB && xP === xB + 1) || xP + 1 > ROW_LENGTH - 1) {
-                    interaction.acknowledge();
-                    return;
+                    return interaction.acknowledge();
                 }
-                self.placement.playerPlacement = [rP, xP + 1];
+                course.edit_player([rP, xP + 1]);
                 break;
             case "upP":
                 if ((rP - 1 === rB && xP === xB) || rP - 1 < 0) {
-                    interaction.acknowledge();
-                    return;
+                    return interaction.acknowledge();
                 }
-                self.placement.playerPlacement = [rP - 1, xP];
+                course.edit_player([rP - 1, xP]);
                 break;
             case "downP":
                 if ((rP + 1 === rB && xP === xB) || rP + 1 > ROW_NUMBER - 1) {
-                    interaction.acknowledge();
-                    return;
+                    return interaction.acknowledge();
                 }
-                self.placement.playerPlacement = [rP + 1, xP];
+                course.edit_player([rP + 1, xP]);
                 break;
         }
-        this.field = generate_field(self.placement).field;
         interaction.acknowledge();
-        interaction.message.embeds[0].description = this.field;
+        interaction.message.embeds[0].description = course.update().frame;
         interaction.message.edit({ embed: interaction.message.embeds[0] });
     }
-    checkWin(placement, interaction, message) {
-        const [rB, xB] = placement.ballPlacement;
-        const [rH, xH] = placement.holePlacement;
+    checkWin(interaction, message, course) {
+        const [rB, xB] = course.placements.ballPlacement;
+        const [rH, xH] = course.placements.holePlacement;
         const viable_spots = [
             [rH, xH],
             [rH - 1, xH],
@@ -223,29 +231,29 @@ module.exports = class Golf extends CommandBase_1.CommandBase {
             .setLabel("End")
             .setID("End")
             .setStyle("DANGER")
-            .setCallback(this.end, 15000, this, message))
+            .setCallback(this.end, 15000, this, message, course))
             .addComponent(new Classes_1.ButtonConstructor(this.client)
             .setLabel("Next Level")
             .setID("next")
-            .setCallback(this.nextLevel, 15000, this, message));
+            .setCallback(this.nextLevel, 15000, this, message, course));
         interaction.message.edit({
-            content: `Nice! You won!\nCurrent level: ${this.level}\npoints gained: ${this.level * 15}`,
+            content: `Nice! You won!\nCurrent level: ${course.level}\npoints gained: ${course.level * 15}`,
             embeds: [],
             components: [row]
         });
     }
-    nextLevel(interaction, self, message) {
-        self.level++;
+    nextLevel(interaction, self, message, course) {
+        course.next_level();
         interaction.message.delete();
-        self.execute(message, [], self.level);
+        self.execute(message, [], course.level);
     }
-    end(interaction, self, message) {
+    end(interaction, self, message, course) {
         interaction.message.delete();
-        const gained_points = self.level * 15;
+        const gained_points = course.level * 15;
         self.client.addPoints(message.author.id, gained_points);
         const embed = self.client.embeds
             .success()
-            .setTitle(`You've completed ${self.level} levels!`)
+            .setTitle(`You've completed ${course.level} levels!`)
             .setDescription(`You've gained \`${gained_points}\` points!`)
             .setTimestamp()
             .setFooter(`Player: ${message.author.tag}`, message.author.dynamicAvatarURL());

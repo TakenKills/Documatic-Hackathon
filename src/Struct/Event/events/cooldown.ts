@@ -8,13 +8,10 @@ export = class Cooldown extends EventBase {
 	}
 
 	public execute(message: Message, _: Command, timeLeft: number): void {
-		let time;
-		if (timeLeft < 59000) time = timeLeft.toFixed(2) + " seconds";
-		else {
-			const minutes = Math.floor(timeLeft / 60000);
-			const seconds = Math.floor((timeLeft - minutes * 60000) / 1000);
-			time = minutes + " minutes and " + seconds + " seconds";
-		}
+		const minutes = timeLeft > 60 ? Math.floor(timeLeft / 60) : 0;
+		const seconds = Math.floor(timeLeft - minutes * 60);
+		const time = `${minutes > 10 ? minutes : `0${minutes}`}:${seconds > 10 ? seconds : `0${seconds}`}m`;
+
 		message.channel.createMessage({
 			content: `you have to wait \`${time}\` before using this command again.`,
 			messageReference: { messageID: message.id }

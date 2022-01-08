@@ -38,9 +38,6 @@ class Client extends eris_1.Client {
             error: () => new Classes_1.Embed().setColor(this.colors.error),
             warning: () => new Classes_1.Embed().setColor(this.colors.warning)
         };
-        this.games = {
-            golf: false
-        };
         this.on("messageCreate", (message) => this.CommandHandler.handle_message(message));
         this.on("ready", () => console.log("Good to go."));
     }

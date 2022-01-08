@@ -31,7 +31,7 @@ export abstract class CommandBase {
 		this.memberPermissions = options.memberPermissions ?? [];
 	}
 
-	public abstract execute(message: Message, args: string[], ...rest: any[]): Promise<void>;
+	public abstract execute(message: Message, args: string[], ...rest: any[]): Promise<any> | any;
 }
 
 export type CommandOptions = {

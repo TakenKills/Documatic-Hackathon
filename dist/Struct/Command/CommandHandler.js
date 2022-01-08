@@ -71,7 +71,6 @@ class CommandHandler extends events_1.EventEmitter {
             const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
             if (now < expirationTime) {
                 const timeLeft = (expirationTime - now) / 1000;
-                console.log("heoooo");
                 return this.emit("cooldown", message, command, timeLeft);
             }
         }

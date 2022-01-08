@@ -1,4 +1,4 @@
-import { ComponentInteraction } from "eris";
+import { ComponentInteraction, Message } from "eris";
 import { CommandBase } from "../../CommandBase";
 import { ActionRowConstructor, ButtonConstructor } from "../../../Classes";
 import { words } from "../../../../constants";
@@ -41,7 +41,7 @@ export = class Hangman extends CommandBase {
 		this.stage = 0;
 	}
 
-	public async execute(message: import("eris").Message, _args: string[]) {
+	public execute(message: Message, _args: string[]) {
 		const letters = this.getLetters(this.word);
 		const rows = new Array(3).fill(0).map(() => new ActionRowConstructor());
 		const btns = new Array(15)
@@ -64,7 +64,7 @@ export = class Hangman extends CommandBase {
 		message.channel.createMessage({ components: rows, embed });
 	}
 
-	private async cb(interaction: ComponentInteraction, _: any, self: this, authorID: string) {
+	private async cb(interaction: ComponentInteraction, self: this, authorID: string) {
 		if (!interaction.message.components) return;
 
 		const letters = self.word.toLowerCase().split("");
@@ -85,6 +85,24 @@ export = class Hangman extends CommandBase {
 			.setDescription(hang(self.stage, self.word, self.correct))
 			.setTimestamp();
 
+		if (self.stage === 4) {
+			self.stage = 0;
+			self.correct = [];
+
+			interaction.acknowledge();
+
+			return interaction.message
+				.edit({
+					components: [],
+					embed: self.client.embeds
+						.error()
+						.setTitle("Game Over!")
+						.setDescription(`The word was ${self.word}`)
+						.setTimestamp()
+				})
+				.then(() => (self.word = words[Math.floor(Math.random() * words.length)]));
+		}
+
 		if (self.word.split("").every((letter) => self.correct.includes(letter))) {
 			const gained_points = 20 - self.stage * 5;
 
@@ -98,21 +116,6 @@ export = class Hangman extends CommandBase {
 			await self.client.addPoints(authorID, gained_points);
 
 			return interaction.message.edit({ components: [], embed });
-		}
-		if (self.stage === 3) {
-			self.stage = 0;
-			self.correct = [];
-
-			return interaction.message
-				.edit({
-					components: [],
-					embed: self.client.embeds
-						.error()
-						.setTitle("Game Over!")
-						.setDescription(`The word was ${self.word}`)
-						.setTimestamp()
-				})
-				.then(() => (self.word = words[Math.floor(Math.random() * words.length)]));
 		}
 
 		interaction.acknowledge();

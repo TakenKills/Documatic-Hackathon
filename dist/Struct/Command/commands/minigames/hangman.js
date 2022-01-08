@@ -32,7 +32,7 @@ module.exports = class Hangman extends CommandBase_1.CommandBase {
         this.correct = [];
         this.stage = 0;
     }
-    async execute(message, _args) {
+    execute(message, _args) {
         const letters = this.getLetters(this.word);
         const rows = new Array(3).fill(0).map(() => new Classes_1.ActionRowConstructor());
         const btns = new Array(15)
@@ -50,7 +50,7 @@ module.exports = class Hangman extends CommandBase_1.CommandBase {
             .setTimestamp();
         message.channel.createMessage({ components: rows, embed });
     }
-    async cb(interaction, _, self, authorID) {
+    async cb(interaction, self, authorID) {
         if (!interaction.message.components)
             return;
         const letters = self.word.toLowerCase().split("");
@@ -72,20 +72,10 @@ module.exports = class Hangman extends CommandBase_1.CommandBase {
             .setTitle(interaction.message.embeds[0].title)
             .setDescription(hang(self.stage, self.word, self.correct))
             .setTimestamp();
-        if (self.word.split("").every((letter) => self.correct.includes(letter))) {
-            const gained_points = 20 - self.stage * 5;
-            embed = self.client.embeds
-                .success()
-                .setTitle(interaction.message.embeds[0].title)
-                .setDescription("You won!")
-                .setFooter(`The word was ${self.word}, You gained ${gained_points} points!`)
-                .setTimestamp();
-            await self.client.addPoints(authorID, gained_points);
-            return interaction.message.edit({ components: [], embed });
-        }
-        if (self.stage === 3) {
+        if (self.stage === 4) {
             self.stage = 0;
             self.correct = [];
+            interaction.acknowledge();
             return interaction.message
                 .edit({
                 components: [],
@@ -96,6 +86,17 @@ module.exports = class Hangman extends CommandBase_1.CommandBase {
                     .setTimestamp()
             })
                 .then(() => (self.word = constants_1.words[Math.floor(Math.random() * constants_1.words.length)]));
+        }
+        if (self.word.split("").every((letter) => self.correct.includes(letter))) {
+            const gained_points = 20 - self.stage * 5;
+            embed = self.client.embeds
+                .success()
+                .setTitle(interaction.message.embeds[0].title)
+                .setDescription("You won!")
+                .setFooter(`The word was ${self.word}, You gained ${gained_points} points!`)
+                .setTimestamp();
+            await self.client.addPoints(authorID, gained_points);
+            return interaction.message.edit({ components: [], embed });
         }
         interaction.acknowledge();
         interaction.message.edit({ components: interaction.message.components, embed });

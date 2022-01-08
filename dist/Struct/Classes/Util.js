@@ -48,13 +48,14 @@ class Util {
             .map((char) => char[0]);
     }
     disableComponents(interaction) {
-        if (interaction.message.components && interaction.message.components.length > 0)
+        if (interaction.message.components && interaction.message.components.length > 0) {
             for (const ActionRow of interaction.message.components) {
                 for (const component of ActionRow.components) {
                     component.disabled = true;
                 }
             }
-        interaction.message.edit({ components: interaction.message.components }).catch((e) => e);
+            interaction.message.edit({ components: interaction.message.components }).catch((e) => e);
+        }
     }
 }
 exports.Util = Util;

@@ -1,7 +1,6 @@
 import { ComponentInteraction, Constants } from "eris";
 import { CommandBase } from "../../CommandBase";
 import { ActionRowConstructor, ButtonConstructor } from "../../../Classes";
-import { Client } from "../../../../main";
 
 export = class rps extends CommandBase {
 	constructor() {
@@ -29,11 +28,11 @@ export = class rps extends CommandBase {
 		message.channel.createMessage({ components: [row], content: "Pick either `rock`, `paper`, or `scissors`." });
 	}
 
-	private async cb(interaction: ComponentInteraction, client: Client, authorID: string) {
+	private async cb(interaction: ComponentInteraction, self: this, authorID: string) {
 		if (interaction.data.component_type !== Constants.ComponentTypes.BUTTON) return;
 
 		const choices = ["rock", "paper", "scissors"];
-		const choice = choices[client.util.randomINT(0, choices.length)];
+		const choice = choices[self.client.util.randomINT(0, choices.length)];
 
 		let winner = -1; // 0 = tie, 1 = bot, 2 = user
 		const opponent = interaction.data.custom_id.slice(4);
@@ -48,7 +47,7 @@ export = class rps extends CommandBase {
 
 		const gain = winner === 1 ? 0 : winner === 2 ? 10 : 5;
 
-		const embed = client.embeds[winner === 2 ? "success" : winner === 1 ? "error" : "warning"]()
+		const embed = self.client.embeds[winner === 2 ? "success" : winner === 1 ? "error" : "warning"]()
 			.setTitle(`${interaction.data.custom_id.slice(4)} vs ${choice}`)
 			.setDescription(`${winner === 2 ? "You won!" : winner === 1 ? "I won!" : "It's a Tie!"}`)
 			.setFooter(`You gained ${gain} points!`)
@@ -56,6 +55,6 @@ export = class rps extends CommandBase {
 
 		interaction.message.edit({ embeds: [embed], components: [], content: "" });
 
-		await client.addPoints(authorID, gain);
+		await self.client.addPoints(authorID, gain);
 	}
 };
