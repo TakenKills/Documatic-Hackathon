@@ -2,7 +2,19 @@
 const eris_1 = require("eris");
 const CommandBase_1 = require("../../CommandBase");
 const Classes_1 = require("../../../Classes");
-module.exports = class rps extends CommandBase_1.CommandBase {
+class Game {
+    constructor(players) {
+        this.players = players;
+        this.players = players;
+        this.bot = !this.players[1] ? true : false;
+        this.choices = [];
+    }
+    add_choice(choice, ID) {
+        this.choices.push({ choice, ID });
+        return this;
+    }
+}
+module.exports = class RPS extends CommandBase_1.CommandBase {
     constructor() {
         super("rockpaperscissors", {
             description: "Play rock paper scissors with the bot!",
@@ -13,44 +25,95 @@ module.exports = class rps extends CommandBase_1.CommandBase {
             cooldown: 10
         });
     }
-    async execute(message, _args) {
-        const btn = new Classes_1.ButtonConstructor(this.client).setID(`rps_rock`).setLabel("Rock").setEmoji({ name: "✊" });
-        const btn2 = new Classes_1.ButtonConstructor(this.client).setID(`rps_paper`).setLabel("Paper").setEmoji({ name: "✋" });
-        const btn3 = new Classes_1.ButtonConstructor(this.client).setID(`rps_scissors`).setLabel("Scissors").setEmoji({ name: "✌️" });
+    async execute(message, args) {
+        const user = message.mentions.length > 0
+            ? message.mentions[0]
+            : this.client.users.get(args[0])
+                ? this.client.users.get(args[0])
+                : null;
+        const game = new Game([message.author, user ? user : null]);
+        if (!user) {
+            const choices = ["rock", "paper", "scissors"];
+            const choice = choices[this.client.util.randomINT(0, choices.length)];
+            game.add_choice(choice, this.client.user.id);
+        }
+        const btn = new Classes_1.ButtonConstructor(this.client)
+            .setID(`rps_rock`)
+            .setLabel("Rock")
+            .setEmoji({ name: "✊" })
+            .setCallback(this.cb, 15000, this, game);
+        const btn2 = new Classes_1.ButtonConstructor(this.client)
+            .setID(`rps_paper`)
+            .setLabel("Paper")
+            .setEmoji({ name: "✋" })
+            .setCallback(this.cb, 15000, this, game);
+        const btn3 = new Classes_1.ButtonConstructor(this.client)
+            .setID(`rps_scissors`)
+            .setLabel("Scissors")
+            .setEmoji({ name: "✌️" })
+            .setCallback(this.cb, 15000, this, game);
         const row = new Classes_1.ActionRowConstructor().setComponents([btn, btn2, btn3]);
-        btn.setCallback(this.cb, 15000, this, message.author.id);
-        btn2.setCallback(this.cb, 15000, this, message.author.id);
-        btn3.setCallback(this.cb, 15000, this, message.author.id);
-        message.channel.createMessage({ components: [row], content: "Pick either `rock`, `paper`, or `scissors`." });
+        this.client.createMessage(message.channel.id, {
+            components: [row],
+            content: `${message.author.mention} Pick either \`rock\`, \`paper\`, or \`scissors\`.`
+        });
     }
-    async cb(interaction, self, authorID) {
+    async cb(interaction, self, game) {
         if (interaction.data.component_type !== eris_1.Constants.ComponentTypes.BUTTON)
             return;
-        const choices = ["rock", "paper", "scissors"];
-        const choice = choices[self.client.util.randomINT(0, choices.length)];
-        let winner = -1; // 0 = tie, 1 = bot, 2 = user
-        const opponent = interaction.data.custom_id.slice(4);
-        if (choice === "rock" && opponent === "paper")
-            winner = 2;
-        else if (choice === "rock" && opponent === "scissors")
+        const clicker = interaction.member ? interaction.member : interaction.user;
+        game.add_choice(interaction.data.custom_id.split("_")[1], clicker.id);
+        if (game.choices.length > 1) {
+            const winner = self.check_winner(game.choices[0], game.choices[1]);
+            if (winner === "tie") {
+                interaction.message.edit({ content: `${game.bot ? "We" : "You both"} Tied!`, components: [] });
+            }
+            else {
+                const winner_user = game.players[winner];
+                const loser_user = game.players[1 - winner];
+                const content = `${winner_user ? (game.bot ? "You" : winner_user.mention) : "I"} won, unfortunate for ${loser_user ? `you ${loser_user.mention}` : "me."}.`;
+                interaction.message.edit({
+                    content,
+                    components: []
+                });
+            }
+        }
+        if (game.choices.length < 2)
+            interaction.message.edit({ content: `${clicker.mention} has picked! you better hurry dude...` });
+        interaction.acknowledge();
+    }
+    check_winner(player1, player2) {
+        let winner = -1; // -1 = tie, 0 = player1, 1 = player2
+        if (player1.choice === "rock" && player2.choice === "paper")
             winner = 1;
-        else if (choice === "paper" && opponent === "rock")
-            winner = 1;
-        else if (choice === "paper" && opponent === "scissors")
-            winner = 2;
-        else if (choice === "scissors" && opponent === "rock")
-            winner = 2;
-        else if (choice === "scissors" && opponent === "paper")
-            winner = 1;
-        else
+        else if (player1.choice === "rock" && player2.choice === "scissors")
             winner = 0;
-        const gain = winner === 1 ? 0 : winner === 2 ? 10 : 5;
+        else if (player1.choice === "paper" && player2.choice === "rock")
+            winner = 0;
+        else if (player1.choice === "paper" && player2.choice === "scissors")
+            winner = 1;
+        else if (player1.choice === "scissors" && player2.choice === "rock")
+            winner = 1;
+        else if (player1.choice === "scissors" && player2.choice === "paper")
+            winner = 0;
+        else
+            winner = -1;
+        if (winner === -1)
+            return "tie";
+        else
+            return winner;
+    }
+};
+/*
+const gain = winner === 1 ? 0 : winner === 2 ? 10 : 5;
+
         const embed = self.client.embeds[winner === 2 ? "success" : winner === 1 ? "error" : "warning"]()
             .setTitle(`${interaction.data.custom_id.slice(4)} vs ${choice}`)
             .setDescription(`${winner === 2 ? "You won!" : winner === 1 ? "I won!" : "It's a Tie!"}`)
             .setFooter(`You gained ${gain} points!`)
             .setTimestamp();
+
         interaction.message.edit({ embeds: [embed], components: [], content: "" });
+
         await self.client.addPoints(authorID, gain);
-    }
-};
+*/

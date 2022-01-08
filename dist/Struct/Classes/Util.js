@@ -2,9 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Util = void 0;
 class Util {
-    constructor(config) {
-        this.config = config;
-        this.config = config;
+    constructor(client) {
+        this.client = client;
+        this.client = client;
+        this.config = this.client.config;
     }
     randomINT(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -47,15 +48,18 @@ class Util {
             .filter((char) => char[1] > 1)
             .map((char) => char[0]);
     }
-    disableComponents(interaction) {
-        if (interaction.message.components && interaction.message.components.length > 0) {
-            for (const ActionRow of interaction.message.components) {
-                for (const component of ActionRow.components) {
-                    component.disabled = true;
-                }
+    async disableComponents(interaction) {
+        const message = await this.client.getMessage(interaction.channel.id, interaction.message.id);
+        if (!message)
+            return;
+        if (message.components && message.components.length <= 0)
+            return;
+        for (const ActionRow of interaction.message.components) {
+            for (const component of ActionRow.components) {
+                component.disabled = true;
             }
-            interaction.message.edit({ components: interaction.message.components }).catch((e) => e);
         }
+        interaction.message.edit({ components: interaction.message.components }).catch((e) => e);
     }
 }
 exports.Util = Util;

@@ -25,7 +25,7 @@ class Client extends eris_1.Client {
         this.CommandHandler = new CommandHandler_1.CommandHandler(this, () => "$");
         this.EventHandler = new EventHandler_1.EventHandler(this);
         this.config = { default_prefix: "$", owners: ["852600076168855612"] };
-        this.util = new Classes_1.Util(this.config);
+        this.util = new Classes_1.Util(this);
         this.colors = {
             error: 0xff0000,
             success: 0x00ff00,
