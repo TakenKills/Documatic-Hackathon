@@ -8,7 +8,7 @@ module.exports = class Cooldown extends EventBase_1.EventBase {
         const minutes = timeLeft > 60 ? Math.floor(timeLeft / 60) : 0;
         const seconds = Math.floor(timeLeft - minutes * 60);
         const time = `${minutes > 10 ? minutes : `0${minutes}`}:${seconds > 10 ? seconds : `0${seconds}`}m`;
-        message.channel.createMessage({
+        this.client.createMessage(message.channel.id, {
             content: `you have to wait \`${time}\` before using this command again.`,
             messageReference: { messageID: message.id }
         });

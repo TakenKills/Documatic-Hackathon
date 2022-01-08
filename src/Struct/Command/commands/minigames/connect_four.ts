@@ -148,12 +148,14 @@ export = class ConnectFour extends CommandBase {
 				: this.client.users.get(args[0])
 				? this.client.users.get(args[0])
 				: null;
-		if (!user) return message.channel.createMessage("You need another player to play Connect Four with!");
+		if (!user)
+			return this.client.createMessage(message.channel.id, "You need another player to play Connect Four with!");
 
-		if (user.id === message.author.id) return message.channel.createMessage("Damn man, that's kinda lonely...");
+		if (user.id === message.author.id)
+			return this.client.createMessage(message.channel.id, "Damn man, that's kinda lonely...");
 
 		if (user.id === this.client.user.id)
-			return message.channel.createMessage("Awhh, you wanna play with me? I don't think so.");
+			return this.client.createMessage(message.channel.id, "Awhh, you wanna play with me? I don't think so.");
 
 		const rules = this.client.embeds
 			.warning()
@@ -167,7 +169,9 @@ export = class ConnectFour extends CommandBase {
 			)
 			.setTimestamp();
 
-		message.channel.createMessage({ embed: rules }).then((message) => setTimeout(() => message.delete(), 8500));
+		this.client
+			.createMessage(message.channel.id, { embed: rules })
+			.then((message) => setTimeout(() => message.delete(), 8500));
 
 		const board = new Board([message.author, user]);
 
@@ -189,7 +193,7 @@ export = class ConnectFour extends CommandBase {
 
 		const row2 = new ActionRowConstructor().setComponents(btns.slice(4, btns.length));
 
-		message.channel.createMessage({
+		this.client.createMessage(message.channel.id, {
 			embed,
 			content: `${message.author.mention} please choose a column to place your block in.`,
 			components: [row, row2]

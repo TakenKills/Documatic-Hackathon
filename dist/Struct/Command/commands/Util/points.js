@@ -16,6 +16,6 @@ module.exports = class Points extends CommandBase_1.CommandBase {
             .setAuthor(message.author.username, message.author.dynamicAvatarURL())
             .setTitle("Points")
             .setDescription(`You have ${points} points.`);
-        return message.channel.createMessage({ embed });
+        return this.client.createMessage(message.channel.id, { embed });
     }
 };

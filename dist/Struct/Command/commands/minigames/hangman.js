@@ -62,7 +62,7 @@ module.exports = class Hangman extends CommandBase_1.CommandBase {
             .setTitle("Hangman! 🎮")
             .setDescription(hang(game.stage, game.word, game.correct))
             .setTimestamp();
-        message.channel.createMessage({ components: rows, embed });
+        this.client.createMessage(message.channel.id, { components: rows, embed });
     }
     async cb(interaction, self, game, authorID) {
         if (!interaction.message.components)

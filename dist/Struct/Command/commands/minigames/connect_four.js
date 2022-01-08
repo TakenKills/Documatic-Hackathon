@@ -122,11 +122,11 @@ module.exports = class ConnectFour extends CommandBase_1.CommandBase {
                 ? this.client.users.get(args[0])
                 : null;
         if (!user)
-            return message.channel.createMessage("You need another player to play Connect Four with!");
+            return this.client.createMessage(message.channel.id, "You need another player to play Connect Four with!");
         if (user.id === message.author.id)
-            return message.channel.createMessage("Damn man, that's kinda lonely...");
+            return this.client.createMessage(message.channel.id, "Damn man, that's kinda lonely...");
         if (user.id === this.client.user.id)
-            return message.channel.createMessage("Awhh, you wanna play with me? I don't think so.");
+            return this.client.createMessage(message.channel.id, "Awhh, you wanna play with me? I don't think so.");
         const rules = this.client.embeds
             .warning()
             .setTitle("Connect Four Rules")
@@ -136,7 +136,9 @@ module.exports = class ConnectFour extends CommandBase_1.CommandBase {
 				4. Winner gets 30 points.
 				5. Have fun!`)
             .setTimestamp();
-        message.channel.createMessage({ embed: rules }).then((message) => setTimeout(() => message.delete(), 8500));
+        this.client
+            .createMessage(message.channel.id, { embed: rules })
+            .then((message) => setTimeout(() => message.delete(), 8500));
         const board = new Board([message.author, user]);
         const embed = this.client.embeds
             .regular()
@@ -150,7 +152,7 @@ module.exports = class ConnectFour extends CommandBase_1.CommandBase {
             .setCallback(this.choose_column, 300000, this, board));
         const row = new Classes_1.ActionRowConstructor().setComponents(btns.slice(0, 4));
         const row2 = new Classes_1.ActionRowConstructor().setComponents(btns.slice(4, btns.length));
-        message.channel.createMessage({
+        this.client.createMessage(message.channel.id, {
             embed,
             content: `${message.author.mention} please choose a column to place your block in.`,
             components: [row, row2]

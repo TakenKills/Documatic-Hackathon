@@ -112,7 +112,7 @@ module.exports = class Golf extends CommandBase_1.CommandBase {
         rows[3].setComponent(player_movement_btns[0], 1);
         rows[3].setComponent(player_movement_btns[1], 3);
         rows[3].setComponent(player_movement_btns[3], 2);
-        message.channel.createMessage({ embed, components: rows });
+        this.client.createMessage(message.channel.id, { embed, components: rows });
     }
     async cb(interaction, self, message, course) {
         var _a;
@@ -257,6 +257,6 @@ module.exports = class Golf extends CommandBase_1.CommandBase {
             .setDescription(`You've gained \`${gained_points}\` points!`)
             .setTimestamp()
             .setFooter(`Player: ${message.author.tag}`, message.author.dynamicAvatarURL());
-        message.channel.createMessage({ embed });
+        this.client.createMessage(message.channel.id, { embed });
     }
 };

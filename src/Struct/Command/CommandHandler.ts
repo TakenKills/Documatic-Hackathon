@@ -133,7 +133,7 @@ export class CommandHandler extends EventEmitter {
 			this.emit("commandUsed", message, command, args);
 		} catch (e) {
 			console.error(e);
-			return message.channel.createMessage("An error occured while executing the command!");
+			return this.client.createMessage(message.channel.id, "An error occured while executing the command!");
 		}
 	}
 }

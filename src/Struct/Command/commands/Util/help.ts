@@ -22,7 +22,7 @@ export = class Help extends CommandBase {
 
 		row.addComponent(button);
 
-		message.channel.createMessage({
+		this.client.createMessage(message.channel.id, {
 			content: "Press the button below to view the help menu!",
 			components: [row]
 		});

@@ -32,7 +32,7 @@ module.exports = class Help extends CommandBase_1.CommandBase {
             .setID("help_button")
             .setCallback(this.helpCB, 12500, this, row);
         row.addComponent(button);
-        message.channel.createMessage({
+        this.client.createMessage(message.channel.id, {
             content: "Press the button below to view the help menu!",
             components: [row]
         });

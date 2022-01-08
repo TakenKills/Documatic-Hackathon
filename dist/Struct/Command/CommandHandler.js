@@ -108,7 +108,7 @@ class CommandHandler extends events_1.EventEmitter {
         }
         catch (e) {
             console.error(e);
-            return message.channel.createMessage("An error occured while executing the command!");
+            return this.client.createMessage(message.channel.id, "An error occured while executing the command!");
         }
     }
 }

@@ -149,7 +149,7 @@ export = class Golf extends CommandBase {
 		rows[3].setComponent(player_movement_btns[1], 3);
 		rows[3].setComponent(player_movement_btns[3], 2);
 
-		message.channel.createMessage({ embed, components: rows });
+		this.client.createMessage(message.channel.id, { embed, components: rows });
 	}
 
 	public async cb(interaction: ComponentInteraction, self: this, message: Message, course: Course): Promise<any> {
@@ -318,6 +318,6 @@ export = class Golf extends CommandBase {
 			.setTimestamp()
 			.setFooter(`Player: ${message.author.tag}`, message.author.dynamicAvatarURL());
 
-		message.channel.createMessage({ embed });
+		this.client.createMessage(message.channel.id, { embed });
 	}
 };

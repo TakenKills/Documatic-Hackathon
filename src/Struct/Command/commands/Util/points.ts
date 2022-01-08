@@ -10,7 +10,7 @@ export = class Points extends CommandBase {
 		});
 	}
 
-	public async execute(message: import("eris").Message): Promise<any> {
+	public async execute(message: import("eris").Message) {
 		const points = await this.client.get_points(message.author.id);
 		const embed = this.client.embeds
 			.regular()
@@ -18,6 +18,6 @@ export = class Points extends CommandBase {
 			.setTitle("Points")
 			.setDescription(`You have ${points} points.`);
 
-		return message.channel.createMessage({ embed });
+		return this.client.createMessage(message.channel.id, { embed });
 	}
 };

@@ -80,7 +80,7 @@ export = class Hangman extends CommandBase {
 			.setDescription(hang(game.stage, game.word, game.correct))
 			.setTimestamp();
 
-		message.channel.createMessage({ components: rows, embed });
+		this.client.createMessage(message.channel.id, { components: rows, embed });
 	}
 
 	private async cb(interaction: ComponentInteraction, self: this, game: Game, authorID: string) {
