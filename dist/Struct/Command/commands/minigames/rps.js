@@ -109,16 +109,3 @@ module.exports = class RPS extends CommandBase_1.CommandBase {
             return winner;
     }
 };
-/*
-const gain = winner === 1 ? 0 : winner === 2 ? 10 : 5;
-
-        const embed = self.client.embeds[winner === 2 ? "success" : winner === 1 ? "error" : "warning"]()
-            .setTitle(`${interaction.data.custom_id.slice(4)} vs ${choice}`)
-            .setDescription(`${winner === 2 ? "You won!" : winner === 1 ? "I won!" : "It's a Tie!"}`)
-            .setFooter(`You gained ${gain} points!`)
-            .setTimestamp();
-
-        interaction.message.edit({ embeds: [embed], components: [], content: "" });
-
-        await self.client.addPoints(authorID, gain);
-*/
