@@ -49,7 +49,7 @@ export class Client extends ErisClient {
 		this.EventHandler = new EventHandler(this);
 
 		this.config = { default_prefix: "$", owners: ["852600076168855612"] };
-		this.util = new Util(this.config);
+		this.util = new Util(this);
 
 		this.colors = {
 			error: 0xff0000,
