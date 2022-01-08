@@ -69,7 +69,7 @@ export = class Hangman extends CommandBase {
 				new ButtonConstructor(this.client)
 					.setLabel(letters[i].toUpperCase())
 					.setID(letters[i])
-					.setCallback(this.cb, 60000, this, game, message.author.id)
+					.setCallback(this.cb, 120000, this, game, message.author.id)
 			);
 
 		for (let i = 0; i < 3; i++) rows[i].setComponents(btns.splice(0, 5));
@@ -84,8 +84,6 @@ export = class Hangman extends CommandBase {
 	}
 
 	private async cb(interaction: ComponentInteraction, self: this, game: Game, authorID: string) {
-		if (!interaction.message.components) return;
-
 		const letters = game.word.toLowerCase().split("");
 		const letter = interaction.data.custom_id!.toLowerCase();
 
@@ -94,18 +92,8 @@ export = class Hangman extends CommandBase {
 			game.add_correct(repeated);
 		} else game.inc_stage();
 
-		for (const row of interaction.message.components) {
-			for (const button of row.components)
-				if ((button as InteractionButton).custom_id === letter) button.disabled = true;
-		}
-		let embed = self.client.embeds
-			.regular()
-			.setTitle(interaction.message.embeds[0].title!)
-			.setDescription(hang(game.stage, game.word, game.correct))
-			.setTimestamp();
-
-		if (game.stage === 4) {
-			interaction.acknowledge();
+		if (game.stage >= 4) {
+			interaction.deferUpdate();
 
 			return interaction.message.edit({
 				components: [],
@@ -116,6 +104,16 @@ export = class Hangman extends CommandBase {
 					.setTimestamp()
 			});
 		}
+
+		for (const row of interaction.message.components!) {
+			for (const button of row.components)
+				if ((button as InteractionButton).custom_id === letter) button.disabled = true;
+		}
+		let embed = self.client.embeds
+			.regular()
+			.setTitle(interaction.message.embeds[0].title!)
+			.setDescription(hang(game.stage, game.word, game.correct))
+			.setTimestamp();
 
 		if (game.word.split("").every((letter) => game.correct.includes(letter))) {
 			const gained_points = 20 - game.stage * 5;
@@ -134,7 +132,7 @@ export = class Hangman extends CommandBase {
 
 		interaction.acknowledge();
 
-		interaction.message.edit({ components: interaction.message.components, embed });
+		return interaction.message.edit({ components: interaction.message.components, embed });
 	}
 
 	private getLetters(word: string) {
