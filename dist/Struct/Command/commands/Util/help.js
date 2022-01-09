@@ -25,17 +25,44 @@ module.exports = class Help extends CommandBase_1.CommandBase {
             clientPermissions: ["embedLinks"]
         });
     }
-    async execute(message, _args) {
+    async execute(message, args) {
+        var _a, _b;
         const row = new Classes_1.ActionRowConstructor();
-        const button = new Classes_1.ButtonConstructor(this.client)
-            .setLabel("Help")
-            .setID("help_button")
-            .setCallback(this.helpCB, 20000, this, row);
-        row.addComponent(button);
-        this.client.createMessage(message.channel.id, {
-            content: "Press the button below to view the help menu!",
-            components: [row]
-        });
+        const commands = this.client.CommandHandler.commands;
+        if (commands.get((_a = args[0]) === null || _a === void 0 ? void 0 : _a.toLowerCase())) {
+            const command = commands.get(args[0].toLowerCase());
+            const embed = this.client.embeds
+                .success()
+                .setTitle(`Help for ${command.name}`)
+                .setDescription(command.description)
+                .addFields([
+                {
+                    name: "Usage",
+                    value: `\`${command.usage}\``
+                },
+                {
+                    name: "Aliases",
+                    value: ((_b = command.aliases) === null || _b === void 0 ? void 0 : _b.length) ? command.aliases.join(", ") : "None"
+                },
+                {
+                    name: "Category",
+                    value: command.category
+                }
+            ])
+                .setTimestamp();
+            return this.client.createMessage(message.channel.id, { embed });
+        }
+        else {
+            const button = new Classes_1.ButtonConstructor(this.client)
+                .setLabel("Help")
+                .setID("help_button")
+                .setCallback(this.helpCB, 20000, this, row);
+            row.addComponent(button);
+            this.client.createMessage(message.channel.id, {
+                content: "Press the button below to view the help menu!",
+                components: [row]
+            });
+        }
     }
     helpCB(interaction, self, row) {
         interaction.message.components = [];

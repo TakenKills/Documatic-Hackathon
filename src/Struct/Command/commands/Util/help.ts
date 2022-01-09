@@ -12,20 +12,48 @@ export = class Help extends CommandBase {
 		});
 	}
 
-	public async execute(message: import("eris").Message, _args: string[]): Promise<void> {
+	public async execute(message: import("eris").Message, args: string[]) {
 		const row = new ActionRowConstructor();
 
-		const button = new ButtonConstructor(this.client)
-			.setLabel("Help")
-			.setID("help_button")
-			.setCallback(this.helpCB, 20000, this, row);
+		const commands = this.client.CommandHandler.commands;
 
-		row.addComponent(button);
+		if (commands.get(args[0]?.toLowerCase())) {
+			const command = commands.get(args[0].toLowerCase())!;
 
-		this.client.createMessage(message.channel.id, {
-			content: "Press the button below to view the help menu!",
-			components: [row]
-		});
+			const embed = this.client.embeds
+				.success()
+				.setTitle(`Help for ${command.name}`)
+				.setDescription(command.description!)
+				.addFields([
+					{
+						name: "Usage",
+						value: `\`${command.usage}\``
+					},
+					{
+						name: "Aliases",
+						value: command.aliases?.length ? command.aliases.join(", ") : "None"
+					},
+					{
+						name: "Category",
+						value: command.category!
+					}
+				])
+				.setTimestamp();
+
+			return this.client.createMessage(message.channel.id, { embed });
+		} else {
+			const button = new ButtonConstructor(this.client)
+				.setLabel("Help")
+				.setID("help_button")
+				.setCallback(this.helpCB, 20000, this, row);
+
+			row.addComponent(button);
+
+			this.client.createMessage(message.channel.id, {
+				content: "Press the button below to view the help menu!",
+				components: [row]
+			});
+		}
 	}
 
 	public helpCB(interaction: ComponentInteraction, self: this, row: ActionRowConstructor): void {
