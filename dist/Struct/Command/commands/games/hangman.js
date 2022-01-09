@@ -42,7 +42,7 @@ module.exports = class Hangman extends CommandBase_1.CommandBase {
             usage: "hangman",
             aliases: ["hm"],
             clientPermissions: ["embedLinks"],
-            cooldown: 69
+            cooldown: 30
         });
     }
     execute(message) {

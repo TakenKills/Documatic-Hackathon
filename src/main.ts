@@ -69,6 +69,16 @@ export class Client extends ErisClient {
 		this.on("ready", () => console.log("Good to go."));
 	}
 
+	async getLeaderboard(limit: number = 10) {
+		const users = (await this.points.find()).sort((a, b) => b.points - a.points);
+
+		for (const user of users) {
+			user.username = (this.users.get(user.userID) ?? (await this.getRESTUser(user.userID))).username;
+		}
+
+		return users.slice(0, limit);
+	}
+
 	async addPoints(userID: string, points: number) {
 		return await this.$inc(userID, { points });
 	}

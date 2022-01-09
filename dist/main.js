@@ -41,6 +41,14 @@ class Client extends eris_1.Client {
         this.on("messageCreate", (message) => this.CommandHandler.handle_message(message));
         this.on("ready", () => console.log("Good to go."));
     }
+    async getLeaderboard(limit = 10) {
+        var _a;
+        const users = (await this.points.find()).sort((a, b) => b.points - a.points);
+        for (const user of users) {
+            user.username = ((_a = this.users.get(user.userID)) !== null && _a !== void 0 ? _a : (await this.getRESTUser(user.userID))).username;
+        }
+        return users.slice(0, limit);
+    }
     async addPoints(userID, points) {
         return await this.$inc(userID, { points });
     }

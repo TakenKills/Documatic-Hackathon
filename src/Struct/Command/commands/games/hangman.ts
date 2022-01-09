@@ -54,7 +54,7 @@ export = class Hangman extends CommandBase {
 			usage: "hangman",
 			aliases: ["hm"],
 			clientPermissions: ["embedLinks"],
-			cooldown: 69
+			cooldown: 30
 		});
 	}
 

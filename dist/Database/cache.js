@@ -9,8 +9,6 @@ class Cache extends events_1.EventEmitter {
         this.name = name;
         this.model = model;
         this.cache = cache;
-        if (!this.cache)
-            throw "Cache is not defined";
         this.on("clearCache", (key) => this.cache.delete(key));
     }
     async findOne(query) {

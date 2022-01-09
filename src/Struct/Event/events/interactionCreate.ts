@@ -37,7 +37,7 @@ export = class interactionCreate extends EventBase {
 				}
 			}
 
-			await current.function!(interaction, ...current.paramaters!);
+			if (current.function) await current.function(interaction, ...current.paramaters!);
 		}
 	}
 };

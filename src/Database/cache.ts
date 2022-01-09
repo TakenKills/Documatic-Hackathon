@@ -15,8 +15,6 @@ export class Cache extends EventEmitter {
 		this.model = model;
 		this.cache = cache;
 
-		if (!this.cache) throw "Cache is not defined";
-
 		this.on("clearCache", (key: string) => this.cache.delete(key));
 	}
 

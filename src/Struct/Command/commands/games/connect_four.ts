@@ -135,11 +135,20 @@ export = class ConnectFour extends CommandBase {
 	constructor() {
 		super("connectfour", {
 			aliases: ["cf"],
-			category: "multiplayer games",
+			category: "games",
 			description: "Play Connect Four.",
 			usage: "connectfour [@user | user_id]",
-			cooldown: 69
+			clientPermissions: ["embedLinks"],
+			cooldown: 30
 		});
+	}
+
+	reset_cooldown(user: User) {
+		const cooldowns = this.client.CommandHandler.cooldowns.get("connectfour")!;
+
+		if (cooldowns.has(user.id)) {
+			this.client.CommandHandler.cooldowns.get("connectfour")!.delete(user.id);
+		}
 	}
 
 	execute(message: Message, args: string[]) {
@@ -149,14 +158,18 @@ export = class ConnectFour extends CommandBase {
 				: this.client.users.get(args[0])
 				? this.client.users.get(args[0])
 				: null;
-		if (!user)
+		if (!user) {
+			this.reset_cooldown(message.author);
 			return this.client.createMessage(message.channel.id, "You need another player to play Connect Four with!");
-
-		if (user.id === message.author.id)
+		}
+		if (user.id === message.author.id) {
+			this.reset_cooldown(message.author);
 			return this.client.createMessage(message.channel.id, "Damn man, that's kinda lonely...");
-
-		if (user.id === this.client.user.id)
+		}
+		if (user.id === this.client.user.id) {
+			this.reset_cooldown(message.author);
 			return this.client.createMessage(message.channel.id, "Awhh, you wanna play with me? I don't think so.");
+		}
 
 		const rules = this.client.embeds
 			.warning()
@@ -170,34 +183,79 @@ export = class ConnectFour extends CommandBase {
 			)
 			.setTimestamp();
 
-		this.client
-			.createMessage(message.channel.id, { embed: rules })
-			.then((message) => setTimeout(() => message.delete(), 8500));
+		this.client.createMessage(message.channel.id, { embed: rules }).then((message) =>
+			setTimeout(() => {
+				message.delete();
 
-		const board = new Board([message.author, user]);
+				const board = new Board([message.author, user]);
 
-		const embed = this.client.embeds
-			.regular()
-			.setTitle(`Connect Four!`)
-			.setDescription(board.preview)
-			.setFooter(`${message.author.username} (Red) vs ${user.username} (Yellow)`)
-			.setTimestamp();
+				const embed = this.client.embeds
+					.regular()
+					.setTitle(`Connect Four!`)
+					.setDescription(board.preview)
+					.setFooter(`${message.author.username} (Red) vs ${user.username} (Yellow)`)
+					.setTimestamp();
 
-		const btns = new Array(7).fill(0).map((_, i) =>
-			new ButtonConstructor(this.client)
-				.setLabel(`Column #${i + 1}`)
-				.setID(`column_${i}`)
-				.setCallback(this.choose_column, 300000, this, board)
+				const btns = new Array(7).fill(0).map((_, i) =>
+					new ButtonConstructor(this.client)
+						.setLabel(`Column #${i + 1}`)
+						.setID(`column_${i}`)
+						.setCallback(this.choose_column, 300000, this, board)
+				);
+
+				const row = new ActionRowConstructor().setComponents(btns.slice(0, 4));
+
+				const row2 = new ActionRowConstructor().setComponents(btns.slice(4, btns.length));
+
+				const exit_button = new ButtonConstructor(this.client)
+					.setLabel("EXIT")
+					.setStyle("DANGER")
+					.setID(`exit-game_${message.author.id}`)
+					.setCallback(this.exit, 300000, this);
+
+				row2.setComponent(exit_button, 3);
+
+				this.client.createMessage(message.channel.id, {
+					embed,
+					content: `${message.author.mention} please choose a column to place your block in.`,
+					components: [row, row2]
+				});
+			}, 8500)
 		);
+	}
 
-		const row = new ActionRowConstructor().setComponents(btns.slice(0, 4));
+	public exit(interaction: ComponentInteraction, self: this, original: ComponentInteraction) {
+		const row = new ActionRowConstructor().addComponents([
+			new ButtonConstructor(self.client)
+				.setLabel("CONFIRM")
+				.setID("confirm_exit_EPH")
+				.setCallback(self.exit, 20000, self, interaction),
+			new ButtonConstructor(self.client)
+				.setLabel("CANCEL")
+				.setID("cancel_exit_EPH")
+				.setCallback(self.exit, 20000, self, interaction)
+		]);
 
-		const row2 = new ActionRowConstructor().setComponents(btns.slice(4, btns.length));
+		if (interaction.data.custom_id === "confirm_exit_EPH") {
+			const user = interaction.member ? interaction.member.user : interaction.user!;
 
-		this.client.createMessage(message.channel.id, {
-			embed,
-			content: `${message.author.mention} please choose a column to place your block in.`,
-			components: [row, row2]
+			interaction.acknowledge();
+
+			if (original.data.custom_id.split("_")[2] === "EPH") return;
+
+			return original.message.edit({
+				content: "",
+				embeds: [self.client.embeds.success().setDescription(`Game ended by ${user.username}`)],
+				components: []
+			});
+		} else if (interaction.data.custom_id === "cancel_exit_EPH") {
+			return interaction.acknowledge();
+		}
+
+		return interaction.createMessage({
+			content: "Are you sure you want to quit?",
+			flags: Constants.MessageFlags.EPHEMERAL,
+			components: [row]
 		});
 	}
 

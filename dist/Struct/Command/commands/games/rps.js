@@ -22,7 +22,7 @@ module.exports = class RPS extends CommandBase_1.CommandBase {
             usage: "rps",
             aliases: ["rps"],
             clientPermissions: ["embedLinks"],
-            cooldown: 20
+            cooldown: 15
         });
     }
     async execute(message, args) {

@@ -49,10 +49,14 @@ class Util {
             .map((char) => char[0]);
     }
     async disableComponents(interaction) {
-        const message = await this.client.getMessage(interaction.channel.id, interaction.message.id);
-        if (!message)
-            return;
-        if (message.components && message.components.length <= 0)
+        let message;
+        try {
+            message = await this.client.getMessage(interaction.channel.id, interaction.message.id);
+        }
+        catch (e) {
+            return void 0;
+        }
+        if (message.components && message.components.length === 0)
             return;
         for (const ActionRow of interaction.message.components) {
             for (const component of ActionRow.components) {

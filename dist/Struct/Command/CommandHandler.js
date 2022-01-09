@@ -51,6 +51,11 @@ class CommandHandler extends events_1.EventEmitter {
         if (message.author.bot)
             return;
         const prefix = (await this.prefix(message.guildID)) || "$";
+        if (message.content === `<@!${this.client.user.id}>`) {
+            return this.client.createMessage(message.channel.id, {
+                content: `Hello! my prefix is \`${prefix}\` use \`${prefix}help\` to view my commands.`
+            });
+        }
         if (!message.content.startsWith(prefix))
             return;
         const [command_name, ...args] = message.content.slice(prefix.length).trim().split(/ +/g);

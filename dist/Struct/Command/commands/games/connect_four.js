@@ -110,11 +110,18 @@ module.exports = class ConnectFour extends CommandBase_1.CommandBase {
     constructor() {
         super("connectfour", {
             aliases: ["cf"],
-            category: "multiplayer games",
+            category: "games",
             description: "Play Connect Four.",
             usage: "connectfour [@user | user_id]",
-            cooldown: 69
+            clientPermissions: ["embedLinks"],
+            cooldown: 30
         });
+    }
+    reset_cooldown(user) {
+        const cooldowns = this.client.CommandHandler.cooldowns.get("connectfour");
+        if (cooldowns.has(user.id)) {
+            this.client.CommandHandler.cooldowns.get("connectfour").delete(user.id);
+        }
     }
     execute(message, args) {
         const user = message.mentions.length > 0
@@ -122,12 +129,18 @@ module.exports = class ConnectFour extends CommandBase_1.CommandBase {
             : this.client.users.get(args[0])
                 ? this.client.users.get(args[0])
                 : null;
-        if (!user)
+        if (!user) {
+            this.reset_cooldown(message.author);
             return this.client.createMessage(message.channel.id, "You need another player to play Connect Four with!");
-        if (user.id === message.author.id)
+        }
+        if (user.id === message.author.id) {
+            this.reset_cooldown(message.author);
             return this.client.createMessage(message.channel.id, "Damn man, that's kinda lonely...");
-        if (user.id === this.client.user.id)
+        }
+        if (user.id === this.client.user.id) {
+            this.reset_cooldown(message.author);
             return this.client.createMessage(message.channel.id, "Awhh, you wanna play with me? I don't think so.");
+        }
         const rules = this.client.embeds
             .warning()
             .setTitle("Connect Four Rules")
@@ -137,26 +150,63 @@ module.exports = class ConnectFour extends CommandBase_1.CommandBase {
 				4. Winner gets 30 points.
 				5. Have fun!`)
             .setTimestamp();
-        this.client
-            .createMessage(message.channel.id, { embed: rules })
-            .then((message) => setTimeout(() => message.delete(), 8500));
-        const board = new Board([message.author, user]);
-        const embed = this.client.embeds
-            .regular()
-            .setTitle(`Connect Four!`)
-            .setDescription(board.preview)
-            .setFooter(`${message.author.username} (Red) vs ${user.username} (Yellow)`)
-            .setTimestamp();
-        const btns = new Array(7).fill(0).map((_, i) => new Classes_1.ButtonConstructor(this.client)
-            .setLabel(`Column #${i + 1}`)
-            .setID(`column_${i}`)
-            .setCallback(this.choose_column, 300000, this, board));
-        const row = new Classes_1.ActionRowConstructor().setComponents(btns.slice(0, 4));
-        const row2 = new Classes_1.ActionRowConstructor().setComponents(btns.slice(4, btns.length));
-        this.client.createMessage(message.channel.id, {
-            embed,
-            content: `${message.author.mention} please choose a column to place your block in.`,
-            components: [row, row2]
+        this.client.createMessage(message.channel.id, { embed: rules }).then((message) => setTimeout(() => {
+            message.delete();
+            const board = new Board([message.author, user]);
+            const embed = this.client.embeds
+                .regular()
+                .setTitle(`Connect Four!`)
+                .setDescription(board.preview)
+                .setFooter(`${message.author.username} (Red) vs ${user.username} (Yellow)`)
+                .setTimestamp();
+            const btns = new Array(7).fill(0).map((_, i) => new Classes_1.ButtonConstructor(this.client)
+                .setLabel(`Column #${i + 1}`)
+                .setID(`column_${i}`)
+                .setCallback(this.choose_column, 300000, this, board));
+            const row = new Classes_1.ActionRowConstructor().setComponents(btns.slice(0, 4));
+            const row2 = new Classes_1.ActionRowConstructor().setComponents(btns.slice(4, btns.length));
+            const exit_button = new Classes_1.ButtonConstructor(this.client)
+                .setLabel("EXIT")
+                .setStyle("DANGER")
+                .setID(`exit-game_${message.author.id}`)
+                .setCallback(this.exit, 300000, this);
+            row2.setComponent(exit_button, 3);
+            this.client.createMessage(message.channel.id, {
+                embed,
+                content: `${message.author.mention} please choose a column to place your block in.`,
+                components: [row, row2]
+            });
+        }, 8500));
+    }
+    exit(interaction, self, original) {
+        const row = new Classes_1.ActionRowConstructor().addComponents([
+            new Classes_1.ButtonConstructor(self.client)
+                .setLabel("CONFIRM")
+                .setID("confirm_exit_EPH")
+                .setCallback(self.exit, 20000, self, interaction),
+            new Classes_1.ButtonConstructor(self.client)
+                .setLabel("CANCEL")
+                .setID("cancel_exit_EPH")
+                .setCallback(self.exit, 20000, self, interaction)
+        ]);
+        if (interaction.data.custom_id === "confirm_exit_EPH") {
+            const user = interaction.member ? interaction.member.user : interaction.user;
+            interaction.acknowledge();
+            if (original.data.custom_id.split("_")[2] === "EPH")
+                return;
+            return original.message.edit({
+                content: "",
+                embeds: [self.client.embeds.success().setDescription(`Game ended by ${user.username}`)],
+                components: []
+            });
+        }
+        else if (interaction.data.custom_id === "cancel_exit_EPH") {
+            return interaction.acknowledge();
+        }
+        return interaction.createMessage({
+            content: "Are you sure you want to quit?",
+            flags: eris_1.Constants.MessageFlags.EPHEMERAL,
+            components: [row]
         });
     }
     choose_column(interaction, self, board) {

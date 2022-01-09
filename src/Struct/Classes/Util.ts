@@ -65,11 +65,15 @@ export class Util {
 	}
 
 	public async disableComponents(interaction: ComponentInteraction) {
-		const message = await this.client.getMessage(interaction.channel.id, interaction.message.id);
+		let message;
 
-		if (!message) return;
+		try {
+			message = await this.client.getMessage(interaction.channel.id, interaction.message.id);
+		} catch (e) {
+			return void 0;
+		}
 
-		if (message.components && message.components.length <= 0) return;
+		if (message.components && message.components.length === 0) return;
 
 		for (const ActionRow of interaction.message.components!) {
 			for (const component of ActionRow.components) {

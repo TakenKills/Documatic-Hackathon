@@ -36,7 +36,7 @@ class Course {
         this.placements = this.field.placement;
     }
     generate_field(Placements) {
-        const base = new Array(ROW_NUMBER).fill(0).map(() => new Array(ROW_LENGTH).fill(" ⚫ "));
+        const base = new Array(ROW_NUMBER).fill(0).map(() => new Array(ROW_LENGTH).fill(" ⬛ "));
         let playerPlacement = Placements === null || Placements === void 0 ? void 0 : Placements.playerPlacement;
         let holePlacement = Placements === null || Placements === void 0 ? void 0 : Placements.holePlacement;
         let ballPlacement = Placements === null || Placements === void 0 ? void 0 : Placements.ballPlacement;
@@ -81,39 +81,50 @@ module.exports = class Golf extends CommandBase_1.CommandBase {
             category: "games",
             description: "Play a game of golf, that consists of infinite levels!",
             usage: "golf",
-            cooldown: 69
+            clientPermissions: ["embedLinks"],
+            cooldown: 30
         });
     }
     execute(message, _, level) {
-        const course = new Course(level);
-        const embed = this.client.embeds.regular().setTitle("Golf!").setDescription(course.frame).setTimestamp();
-        const btns = new Array(20).fill(0).map((_, i) => {
-            var _a;
-            return new Classes_1.ButtonConstructor(this.client)
-                .setLabel("\u200b")
-                .setID(`DISABLED_${(_a = message.guildID) !== null && _a !== void 0 ? _a : message.author.id}_${i}`)
-                .setDisabled(true);
+        const how_to_play = this.client.embeds
+            .regular()
+            .setTitle("Golf! How to play:")
+            .setDescription("You use the arrow keys to move the ball around the field (moves 2 blocks).\nyou can move the ball only when your player is near it.\nYou move your player using the pointer fingers.\nTo win and advance to the next level you have to get the ball near (1 block radius).\nHave fun!");
+        this.client.createMessage(message.channel.id, { embed: how_to_play }).then((msg) => {
+            setTimeout(() => {
+                msg.delete();
+                const course = new Course(level);
+                const embed = this.client.embeds.regular().setTitle("Golf!").setDescription(course.frame).setTimestamp();
+                const btns = new Array(20).fill(0).map((_, i) => {
+                    var _a;
+                    return new Classes_1.ButtonConstructor(this.client)
+                        .setLabel("\u200b")
+                        .setID(`DISABLED_${(_a = message.guildID) !== null && _a !== void 0 ? _a : message.author.id}_${i}`)
+                        .setDisabled(true)
+                        .setCallback(() => void 0, 300000);
+                });
+                const ball_movement_btns = new Array(4).fill(0).map(() => new Classes_1.ButtonConstructor(this.client));
+                ball_movement_btns[0].setLabel("⬅️").setID("left").setCallback(this.cb, 300000, this, message, course);
+                ball_movement_btns[1].setLabel("➡️").setID("right").setCallback(this.cb, 300000, this, message, course);
+                ball_movement_btns[2].setLabel("⬆️").setID("up").setCallback(this.cb, 300000, this, message, course);
+                ball_movement_btns[3].setLabel("⬇️").setID("down").setCallback(this.cb, 300000, this, message, course);
+                const player_movement_btns = new Array(4).fill(0).map(() => new Classes_1.ButtonConstructor(this.client));
+                player_movement_btns[0].setLabel("👈").setID("leftP").setCallback(this.cb, 300000, this, message, course);
+                player_movement_btns[1].setLabel("👉").setID("rightP").setCallback(this.cb, 300000, this, message, course);
+                player_movement_btns[2].setLabel("👆").setID("upP").setCallback(this.cb, 300000, this, message, course);
+                player_movement_btns[3].setLabel("👇").setID("downP").setCallback(this.cb, 300000, this, message, course);
+                const rows = new Array(4).fill(0).map(() => new Classes_1.ActionRowConstructor().setComponents(btns.splice(0, 5)));
+                rows[0].setComponent(ball_movement_btns[2], 2);
+                rows[1].setComponent(ball_movement_btns[0], 1);
+                rows[1].setComponent(ball_movement_btns[1], 3);
+                rows[1].setComponent(ball_movement_btns[3], 2);
+                rows[2].setComponent(player_movement_btns[2], 2);
+                rows[3].setComponent(player_movement_btns[0], 1);
+                rows[3].setComponent(player_movement_btns[1], 3);
+                rows[3].setComponent(player_movement_btns[3], 2);
+                this.client.createMessage(message.channel.id, { embed, components: rows });
+            }, 10000);
         });
-        const ball_movement_btns = new Array(4).fill(0).map(() => new Classes_1.ButtonConstructor(this.client));
-        ball_movement_btns[0].setLabel("⬅️").setID("left").setCallback(this.cb, 60000, this, message, course);
-        ball_movement_btns[1].setLabel("➡️").setID("right").setCallback(this.cb, 60000, this, message, course);
-        ball_movement_btns[2].setLabel("⬆️").setID("up").setCallback(this.cb, 60000, this, message, course);
-        ball_movement_btns[3].setLabel("⬇️").setID("down").setCallback(this.cb, 60000, this, message, course);
-        const player_movement_btns = new Array(4).fill(0).map(() => new Classes_1.ButtonConstructor(this.client));
-        player_movement_btns[0].setLabel("👈").setID("leftP").setCallback(this.cb, 60000, this, message, course);
-        player_movement_btns[1].setLabel("👉").setID("rightP").setCallback(this.cb, 60000, this, message, course);
-        player_movement_btns[2].setLabel("👆").setID("upP").setCallback(this.cb, 60000, this, message, course);
-        player_movement_btns[3].setLabel("👇").setID("downP").setCallback(this.cb, 60000, this, message, course);
-        const rows = new Array(4).fill(0).map(() => new Classes_1.ActionRowConstructor().setComponents(btns.splice(0, 5)));
-        rows[0].setComponent(ball_movement_btns[2], 2);
-        rows[1].setComponent(ball_movement_btns[0], 1);
-        rows[1].setComponent(ball_movement_btns[1], 3);
-        rows[1].setComponent(ball_movement_btns[3], 2);
-        rows[2].setComponent(player_movement_btns[2], 2);
-        rows[3].setComponent(player_movement_btns[0], 1);
-        rows[3].setComponent(player_movement_btns[1], 3);
-        rows[3].setComponent(player_movement_btns[3], 2);
-        this.client.createMessage(message.channel.id, { embed, components: rows });
     }
     async cb(interaction, self, message, course) {
         var _a;
@@ -258,6 +269,6 @@ module.exports = class Golf extends CommandBase_1.CommandBase {
             .setDescription(`You've gained \`${gained_points}\` points!`)
             .setTimestamp()
             .setFooter(`Player: ${message.author.tag}`, message.author.dynamicAvatarURL());
-        this.client.createMessage(message.channel.id, { embed });
+        self.client.createMessage(message.channel.id, { embed });
     }
 };

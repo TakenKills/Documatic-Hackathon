@@ -30,7 +30,7 @@ module.exports = class Help extends CommandBase_1.CommandBase {
         const button = new Classes_1.ButtonConstructor(this.client)
             .setLabel("Help")
             .setID("help_button")
-            .setCallback(this.helpCB, 12500, this, row);
+            .setCallback(this.helpCB, 20000, this, row);
         row.addComponent(button);
         this.client.createMessage(message.channel.id, {
             content: "Press the button below to view the help menu!",
@@ -43,7 +43,7 @@ module.exports = class Help extends CommandBase_1.CommandBase {
         const other_button = new Classes_1.ButtonConstructor(self.client)
             .setLabel("Help")
             .setID("help_button2")
-            .setCallback(self.helpCB2, 12500, self);
+            .setCallback(self.helpCB2, 20000, self);
         const new_row = new Classes_1.ActionRowConstructor().addComponents([row.components[0], other_button]);
         interaction.acknowledge();
         interaction.message.edit({ content: "Oops.. maybe try the other button?", components: [new_row] });
@@ -61,7 +61,7 @@ module.exports = class Help extends CommandBase_1.CommandBase {
         const selectMenu = new Classes_1.SelectMenuConstructor(self.client)
             .setID("help_menu")
             .setPlaceholder("Select a category to view")
-            .setCallback(self.helpMenuCB, 20000, self)
+            .setCallback(self.helpMenuCB, 30000, self)
             .setOptions(options);
         const new_row = new Classes_1.ActionRowConstructor().addComponent(selectMenu);
         interaction.acknowledge();

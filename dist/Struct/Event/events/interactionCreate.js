@@ -30,7 +30,8 @@ module.exports = class interactionCreate extends EventBase_1.EventBase {
                     break;
                 }
             }
-            await current.function(interaction, ...current.paramaters);
+            if (current.function)
+                await current.function(interaction, ...current.paramaters);
         }
     }
 };

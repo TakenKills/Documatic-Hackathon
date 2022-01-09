@@ -30,7 +30,7 @@ export = class RPS extends CommandBase {
 			usage: "rps",
 			aliases: ["rps"],
 			clientPermissions: ["embedLinks"],
-			cooldown: 20
+			cooldown: 15
 		});
 	}
 

@@ -18,7 +18,7 @@ export = class Help extends CommandBase {
 		const button = new ButtonConstructor(this.client)
 			.setLabel("Help")
 			.setID("help_button")
-			.setCallback(this.helpCB, 12500, this, row);
+			.setCallback(this.helpCB, 20000, this, row);
 
 		row.addComponent(button);
 
@@ -36,7 +36,7 @@ export = class Help extends CommandBase {
 		const other_button = new ButtonConstructor(self.client)
 			.setLabel("Help")
 			.setID("help_button2")
-			.setCallback(self.helpCB2, 12500, self);
+			.setCallback(self.helpCB2, 20000, self);
 
 		const new_row = new ActionRowConstructor().addComponents([row.components[0], other_button]);
 
@@ -60,7 +60,7 @@ export = class Help extends CommandBase {
 		const selectMenu = new SelectMenuConstructor(self.client)
 			.setID("help_menu")
 			.setPlaceholder("Select a category to view")
-			.setCallback(self.helpMenuCB, 20000, self)
+			.setCallback(self.helpMenuCB, 30000, self)
 			.setOptions(options);
 
 		const new_row = new ActionRowConstructor().addComponent(selectMenu);
