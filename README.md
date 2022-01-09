@@ -1,9 +1,29 @@
-# Documatic Hackathon.
+# [Documatic](https://www.documatic.com/) Hackathon (Minigame discord bot).
 
 ### Hello, i'm takenkills and i'm patricipating in the - Documatic Hackation (JAN 2 - JAN 10)
-### The Topic of this hackathon is a discord bot based off of minigames.
+### This discord bot is made in participation of the hackation.
 
 <br>
 
-## This is my bot, a fully customizable minigame discord bot.
-### 
+## Kanye South is the name of the discord bot.
+### it consists of 5 Game commands and 4 Utility commands
+
+<br>
+
+### Games: Snake game, Golf (kinda), RPS, Hangman, and Connect four.
+### Utility: Leaderboard, Points, Help, and Info.
+
+<br>
+
+## This bot has a point and leaderboard system to allow the competitive scene to be introduced into this bot.
+
+<br>
+
+# Credits.
+### • [TakenKills](https://github.com/TakenKills/)
+### • 2016 Laptop.
+
+<br>
+
+# Pull requests
+### As this hackathon is over by now, pull requests are open to everyone. Any contribution would be appreciated
