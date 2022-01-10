@@ -1,14 +1,3 @@
-# IDE
-.idea
-
-# env
 .env
-
-# Database.
-
-src/Database
-dist/Database
-
-# node
-
+.idea
 node_modules
