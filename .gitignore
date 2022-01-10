@@ -1,3 +1,11 @@
+# Environment
 .env
+
+# Integrated Development Environment
 .idea
+
+# Node.js
 node_modules
+
+# Private
+**/Database/
