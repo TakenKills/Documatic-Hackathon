@@ -8,6 +8,7 @@
 ### This discord bot is made in participation of the hackation.
 
 <br>
+
 ## Kanye South is the name of the discord bot.
 ### it consists of 5 Game commands and 4 Utility commands
 
